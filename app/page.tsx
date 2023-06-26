@@ -4,8 +4,20 @@ import TodoItem from "./components/TodoItem";
 import TodoList from "./components/TodoList";
 import ThemeSwitcher from "./ThemeSwitcher";
 
+interface Task {
+  id: number;
+  text: string;
+  done: boolean;
+}
+
+interface Action {
+  type: string;
+  id: number;
+  text: string;
+}
+
 export default function Home() {
-  const [tasks, dispatch] = useReducer(tasksReducer, initialTasks);
+  const [tasks, dispatch] = useReducer<React.Reducer<Task[], Action>>(tasksReducer, initialTasks);
 
   const handleAddItem = (text: string) => {
     console.log(`adding now... ${text}`);
@@ -39,7 +51,7 @@ export default function Home() {
   );
 }
 
-function tasksReducer(tasks, action) {
+function tasksReducer(tasks: Task[], action: Action): Task[] {
 
   switch (action.type) {
     case 'added': {
@@ -56,7 +68,7 @@ function tasksReducer(tasks, action) {
 
 }
 let nextId = 3;
-const initialTasks = [
+const initialTasks: Task[] = [
   { id: 0, text: "first task", done: true },
   { id: 1, text: "second", done: false },
   { id: 2, text: "Drink matcha", done: false },
