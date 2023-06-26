@@ -1,7 +1,17 @@
-"use client"
+"use client";
 import React from 'react'
 
-export default function TodoList({tasks}) {
+interface Task {
+  id: number;
+  text: string;
+  done: boolean
+}
+
+interface TodoListProps {
+  tasks: Task[];
+}
+
+export default function TodoList({tasks}: TodoListProps) {
   return (
     <ul className='mt-4 bg-white drop-shadow-md dark:bg-[#25273c] dark:text-[#cacde8]  rounded-md'>
       {tasks.map(task => (
