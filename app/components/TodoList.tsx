@@ -46,7 +46,7 @@ export default function TodoList({
               >
                 <Image className="mx-auto " src={Check} alt="check icon" />
               </button>
-              <div className={task.done ? `line-through dark:text-[#54577a] text-[#b3b5ce]` : `text-[#333552]`}>
+              <div className={task.done ? `line-through dark:text-[#54577a] text-[#b3b5ce]` : `text-[#333552] dark:text-[#b3b5ce]`}>
                 {task.text}
               </div>
             </div>
