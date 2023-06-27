@@ -1,5 +1,5 @@
 "use client";
-import { useReducer } from "react";
+import { useReducer, useEffect} from "react";
 import TodoItem from "./components/TodoItem";
 import TodoList from "./components/TodoList";
 import ThemeSwitcher from "./ThemeSwitcher";
@@ -16,11 +16,26 @@ interface Action {
   text: string;
 }
 
+let nextId = 3;
+let predefinedTasks: Task[] = [
+  { id: 0, text: "Add", done: true },
+  { id: 1, text: "Some", done: true },
+  { id: 2, text: "Tasks", done: false },
+];
+
 export default function Home() {
+  const savedTasks = localStorage.getItem('tasks');
+  const initialTasks = savedTasks ? JSON.parse(savedTasks) : predefinedTasks;
+
   const [tasks, dispatch] = useReducer<React.Reducer<Task[], Action>>(
     tasksReducer,
     initialTasks
   );
+  nextId = tasks.length;
+
+  useEffect(() => {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+  }, [tasks]);
 
   const handleAddItem = (text: string) => {
     console.log(`adding now... ${text}`);
@@ -94,9 +109,4 @@ function tasksReducer(tasks: Task[], action: Action): Task[] {
     }
   }
 }
-let nextId = 3;
-const initialTasks: Task[] = [
-  { id: 0, text: "first task", done: true },
-  { id: 1, text: "second", done: false },
-  { id: 2, text: "Drink matcha", done: false },
-];
+
