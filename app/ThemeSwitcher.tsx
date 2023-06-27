@@ -1,7 +1,9 @@
 "use client";
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
-import { FaMoon, FaSun } from "react-icons/fa";
+import Moon from "/public/images/icon-moon.svg"
+import Sun from "/public/images/icon-sun.svg"
 
 const ThemeSwitcher = () => {
   const [mounted, setMounted] = useState(false);
@@ -17,12 +19,11 @@ const ThemeSwitcher = () => {
   const light = theme === "light";
   return (
     <div>
-      <br />
       <button className=" dark:text-yellow-400 text-white transition-all duration-300 " >
       {light ? (
-        <FaMoon onClick={() => setTheme("dark")} size={27} />
+        <Image alt="moon icon" src={Moon} width={25} height={25} onClick={() => setTheme("dark")}/>
       ) : (
-        <FaSun onClick={() => setTheme("light")} size={27} />
+        <Image alt="moon icon" src={Sun} width={25} height={25} onClick={() => setTheme("light")}/>
       )}
     </button>
     </div>

@@ -13,6 +13,8 @@ export default function TodoItem({
   const handleKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
       console.log("Enter was pressed!");
+      if(!text.trim().length) // if input is empty 
+        return;
       onAddItem(text);
       setText('');
     }

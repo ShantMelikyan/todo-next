@@ -17,17 +17,37 @@ interface Action {
 }
 
 export default function Home() {
-  const [tasks, dispatch] = useReducer<React.Reducer<Task[], Action>>(tasksReducer, initialTasks);
+  const [tasks, dispatch] = useReducer<React.Reducer<Task[], Action>>(
+    tasksReducer,
+    initialTasks
+  );
 
   const handleAddItem = (text: string) => {
     console.log(`adding now... ${text}`);
-
     dispatch({
-      type: 'added',
+      type: "added",
       id: nextId++,
       text: text,
     });
   };
+  const handleDeleteItem = (id: number) => {
+    console.log(`deleting now... ${id}`);
+    dispatch({
+      type: "deleted",
+      id: id,
+      text: "",
+    });
+  };
+
+  const handleCheckedItem = (id: number) => {
+    console.log(`now done task id: ${id}`);
+    dispatch({
+      type: "checkToggle",
+      id: id,
+      text: ""
+    });
+  };
+
   return (
     <main
       className="dark:text-white h-screen text-black 
@@ -35,37 +55,44 @@ export default function Home() {
     bg-light-mobile md:bg-light-desktop 
     bg-contain bg-no-repeat"
     >
-      <div className="flex items-center justify-between p-6 max-w-4xl mx-auto">
-        <h1 className="transition-colors duration-300 text-4xl mt-4 text-white">
+      <div className="flex items-center justify-between px-6 max-w-4xl mx-auto pt-12">
+        <h1 className="transition-colors duration-300 text-3xl tracking-[0.3em]	 font-bold text-white ">
           TODO
         </h1>
         <ThemeSwitcher />
       </div>
       <div className=" p-6 max-w-4xl mx-auto">
         <TodoItem onAddItem={handleAddItem} />
-        <TodoList tasks={tasks}
-       
-        />
+        <TodoList tasks={tasks} onDeleteItem={handleDeleteItem} onCheckItem={handleCheckedItem}/>
       </div>
     </main>
   );
 }
 
 function tasksReducer(tasks: Task[], action: Action): Task[] {
-
   switch (action.type) {
-    case 'added': {
-      return [...tasks, {
-        id: action.id,
-        text: action.text,
-        done: false
-      }];
+    case "added": {
+      return [
+        ...tasks,
+        {
+          id: action.id,
+          text: action.text,
+          done: false,
+        },
+      ];
+    }
+    case "deleted": {
+      return tasks.filter((task) => task.id !== action.id);
+    }
+    case 'checkToggle': {
+      return tasks.map(task => 
+        task.id === action.id ? { ...task, done: !task.done } : task
+      );
     }
     default: {
-      throw Error('Unknown action: ' + action.type);
+      throw Error("Unknown action: " + action.type);
     }
   }
-
 }
 let nextId = 3;
 const initialTasks: Task[] = [

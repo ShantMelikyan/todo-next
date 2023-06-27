@@ -2,7 +2,7 @@ import Providers from "./providers";
 import './globals.css'
 import { Josefin_Sans } from 'next/font/google'
 
-const josefin_sans = Josefin_Sans({ subsets: ['latin'], })
+const josefin_sans = Josefin_Sans({ subsets: ['latin'], weight: ["400", "700"] })
 
 export const metadata = {
   title: 'To do app',
