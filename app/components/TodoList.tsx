@@ -22,19 +22,20 @@ export default function TodoList({
   onCheckItem,
 }: TodoListProps) {
   const [filter, setFilter] = useState("All");
+  const activeTasksCount = tasks.filter((task) => task.done === false).length;
+
   const handleClearCompleted = () => {
     const completedTasks = tasks.filter((task) => task.done === true);
     completedTasks.forEach((task) => onDeleteItem(task.id));
   };
-  const activeTasksCount = tasks.filter((task) => task.done === false).length;
 
   let filtetedTasks;
 
   switch (filter) {
-    case "active":
+    case "Active":
       filtetedTasks = tasks.filter((task) => task.done === false);
       break;
-    case "completed":
+    case "Completed":
       filtetedTasks = tasks.filter((task) => task.done === true);
       break;
     default: // 'all' or any other value
@@ -89,7 +90,7 @@ export default function TodoList({
         ))}
 
         <li className="flex justify-between p-4 text-[#777a92] ">
-          {activeTasksCount ? (
+          {tasks.length ? (
             <>
               <span>{`${activeTasksCount} items left`}</span>
               <button onClick={handleClearCompleted}>Clear Completed</button>
@@ -103,14 +104,50 @@ export default function TodoList({
         </li>
       </ul>
       <div
-        className="p-4 mt-4 bg-white drop-shadow-md 
-    dark:bg-[#25273c] dark:text-[#898eb6] text-[#636681] 
-    rounded-md flex justify-center [&>*]:px-3"
+        className="p-4 mt-4 drop-shadow-md 
+        bg-white dark:bg-[#25273c] 
+        dark:text-[#898eb6] text-[#636681] 
+        rounded-md flex justify-center [&>*]:px-3"
       >
-        <button onClick={() => setFilter("all")}> All</button>
-        <button onClick={() => setFilter("active")}>Active</button>
-        <button onClick={() => setFilter("completed")}>Completed</button>
+        <FilterButton
+          currentFilter={filter}
+          filterValue="All"
+          onFilterChange={setFilter}
+        />
+        <FilterButton
+          currentFilter={filter}
+          filterValue="Active"
+          onFilterChange={setFilter}
+        />
+        <FilterButton
+          currentFilter={filter}
+          filterValue="Completed"
+          onFilterChange={setFilter}
+        />
       </div>
     </>
   );
 }
+
+type FilterButtonProps = {
+  currentFilter: string;
+  filterValue: string;
+  onFilterChange: (filter: string) => void;
+};
+
+const FilterButton: React.FC<FilterButtonProps> = ({
+  currentFilter,
+  filterValue,
+  onFilterChange,
+}) => {
+  const isActive = currentFilter === filterValue;
+
+  return (
+    <button
+      className={isActive ? "text-[#3a7bfd]" : ""}
+      onClick={() => onFilterChange(filterValue)}
+    >
+      {filterValue}
+    </button>
+  );
+};
