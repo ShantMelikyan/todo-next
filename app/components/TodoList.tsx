@@ -97,7 +97,7 @@ export default function TodoList({
       </DragDropContext>
       
     </div>
-    <div className={`flex justify-between p-4 text-[#777a92] dark:bg-[#25273c] drop-shadow-md ` + (tasks.length ? "rounded-b-md" : "rounded-md")}>
+    <div className={`flex justify-between p-4 text-[#777a92] dark:bg-[#25273c] bg-white drop-shadow-md ` + (tasks.length ? "rounded-b-md" : "rounded-md")}>
         {tasks.length ? (
           <>
             <span>{`${activeTasksCount} items left`}</span>
@@ -132,6 +132,7 @@ export default function TodoList({
           onFilterChange={setFilter}
         />
       </div>
+      <p className="text-[#636681] text-center m-6">Drag and drop to reorder tasks.</p>
     </>
   );
 }
