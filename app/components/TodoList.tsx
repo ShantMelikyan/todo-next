@@ -1,8 +1,12 @@
 "use client";
 import React, { useState } from "react";
 import Task from "./Task";
-import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
-
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  DropResult,
+} from "react-beautiful-dnd";
 
 interface Task {
   id: number;
@@ -24,24 +28,21 @@ export default function TodoList({
   onReorderItems,
 }: TodoListProps) {
   const [filter, setFilter] = useState("All");
-  const [currentTasks, setCurrentTasks] = useState<Task[]>(tasks);
   const activeTasksCount = tasks.filter((task) => task.done === false).length;
-
-  const setTasksAfterReorder = (tasks: Task[]) => {
-    setCurrentTasks(tasks);
-  };
-
-
-  const handleClearCompleted = () => {
-    if (tasks) {
-      const completedTasks = tasks.filter((task) => task.done === true);
-
-      completedTasks.forEach((task) => onDeleteItem(task.id));
-    }
-  };
-
   let filtetedTasks: Task[];
 
+  const handleClearCompleted = () => {
+    const completedTasks = tasks.filter((task) => task.done === true);
+    completedTasks.forEach((task) => onDeleteItem(task.id));
+  };
+
+  const onDragEnd = (result: DropResult) => {
+    if (!result.destination) {
+      return;
+    }
+    onReorderItems(result.source.index, result.destination.index);
+  };
+  
   switch (filter) {
     case "Active":
       filtetedTasks = tasks.filter((task) => task.done === false);
@@ -53,51 +54,50 @@ export default function TodoList({
       filtetedTasks = tasks;
   }
 
-  
-  const onDragEnd = (result: DropResult)  => {
-    if (!result.destination) {
-      return;
-    }
-
-    onReorderItems(result.source.index, result.destination.index);
-  };
-
   return (
     <>
-    <div>
-    <DragDropContext onDragEnd={onDragEnd}>
-        <Droppable droppableId="droppable">
-          {(provided) => (
-            <ul
-              className="mt-4 bg-white dark:bg-[#25273c] dark:text-[#cacde8] rounded-t-md"
-              ref={provided.innerRef}
-              {...provided.droppableProps}
-            >
-              {filtetedTasks.map((task, index) => (
-                <Draggable key={task.id} draggableId={task.id.toString()} index={index}>
-                {(provided) => (
-                  <li
-                    ref={provided.innerRef}
-                    {...provided.draggableProps}
-                    {...provided.dragHandleProps}
+      <div>
+        <DragDropContext onDragEnd={onDragEnd}>
+          <Droppable droppableId="droppable">
+            {(provided) => (
+              <ul
+                className="mt-4 bg-white dark:bg-[#25273c] dark:text-[#cacde8] rounded-t-md"
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+              >
+                {filtetedTasks.map((task, index) => (
+                  <Draggable
+                    key={task.id}
+                    draggableId={String(task.id)}
+                    index={index}
                   >
-                    <Task
-                      task={task}
-                      onDeleteItem={onDeleteItem}
-                      onCheckItem={onCheckItem}
-                    />
-                  </li>
-                )}
-              </Draggable>
-              ))}
-              {provided.placeholder}
-            </ul>
-          )}
-        </Droppable>
-      </DragDropContext>
-      
-    </div>
-    <div className={`flex justify-between p-4 text-[#777a92] dark:bg-[#25273c] bg-white drop-shadow-md ` + (tasks.length ? "rounded-b-md" : "rounded-md")}>
+                    {(provided) => (
+                      <li
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                      >
+                        <Task
+                          task={task}
+                          onDeleteItem={onDeleteItem}
+                          onCheckItem={onCheckItem}
+                        />
+                      </li>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </ul>
+            )}
+          </Droppable>
+        </DragDropContext>
+      </div>
+      <div
+        className={
+          `flex justify-between p-4 text-[#777a92] dark:bg-[#25273c] bg-white drop-shadow-md ` +
+          (tasks.length ? "rounded-b-md" : "rounded-md")
+        }
+      >
         {tasks.length ? (
           <>
             <span>{`${activeTasksCount} items left`}</span>
@@ -132,7 +132,9 @@ export default function TodoList({
           onFilterChange={setFilter}
         />
       </div>
-      <p className="text-[#636681] text-center m-6">Drag and drop to reorder tasks.</p>
+      <p className="text-[#636681] text-center m-6">
+        Drag and drop to reorder tasks.
+      </p>
     </>
   );
 }
@@ -159,4 +161,3 @@ const FilterButton: React.FC<FilterButtonProps> = ({
     </button>
   );
 };
-

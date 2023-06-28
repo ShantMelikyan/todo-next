@@ -17,7 +17,7 @@ interface TaskProps {
 
 const Task: React.FC<TaskProps> = ({ task, onDeleteItem, onCheckItem }) => {
   return (
-    <li
+    <div
       key={task.id}
       className="border-b dark:border-[#393a4c] p-4 hover:dark:text-[#e4e5f1]"
     >
@@ -52,7 +52,7 @@ const Task: React.FC<TaskProps> = ({ task, onDeleteItem, onCheckItem }) => {
           <Image src={Cross} alt="cross icon" />
         </button>
       </div>
-    </li>
+    </div>
   );
 };
 

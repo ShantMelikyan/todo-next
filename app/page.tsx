@@ -33,6 +33,7 @@ export default function Home() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
   let savedTasks;
   if (typeof window !== "undefined") {
     savedTasks = localStorage.getItem("tasks");
@@ -43,7 +44,6 @@ export default function Home() {
     tasksReducer,
     initialTasks
   );
-  nextId = tasks.length;
 
   useEffect(() => {
     localStorage.setItem("tasks", JSON.stringify(tasks));
@@ -52,6 +52,7 @@ export default function Home() {
   if (!mounted) {
     return <></>;
   }
+
   const handleAddItem = (text: string) => {
     console.log(`adding now... ${text}`);
     dispatch({
@@ -60,6 +61,7 @@ export default function Home() {
       text: text,
     });
   };
+
   const handleDeleteItem = (id: number) => {
     console.log(`deleting now... ${id}`);
     dispatch({
@@ -78,7 +80,7 @@ export default function Home() {
     });
   };
 
-  const handleReorderItems = (
+  const handleReorderItem = (
     sourceIndex: number,
     destinationIndex: number
   ) => {
@@ -95,6 +97,7 @@ export default function Home() {
     bg-light-mobile md:bg-light-desktop 
     bg-contain bg-no-repeat"
     >
+    
       <div className="flex items-center justify-between px-6 max-w-4xl mx-auto pt-12">
         <h1 className="transition-colors duration-300 text-3xl tracking-[0.3em]	 font-bold text-white ">
           TODO
@@ -107,7 +110,7 @@ export default function Home() {
           tasks={tasks}
           onDeleteItem={handleDeleteItem}
           onCheckItem={handleCheckedItem}
-          onReorderItems={handleReorderItems}
+          onReorderItems={handleReorderItem}
         />
       </div>
     </main>
