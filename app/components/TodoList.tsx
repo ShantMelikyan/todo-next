@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import Cross from "../../public/images/icon-cross.svg";
 import Check from "../../public/images/icon-check.svg";
 import Image from "next/image";
+import { DragDropContext, Droppable } from "react-beautiful-dnd";
 
 interface Task {
   id: number;
@@ -25,8 +26,11 @@ export default function TodoList({
   const activeTasksCount = tasks.filter((task) => task.done === false).length;
 
   const handleClearCompleted = () => {
-    const completedTasks = tasks.filter((task) => task.done === true);
-    completedTasks.forEach((task) => onDeleteItem(task.id));
+    if (tasks) {
+      const completedTasks = tasks.filter((task) => task.done === true);
+
+      completedTasks.forEach((task) => onDeleteItem(task.id));
+    }
   };
 
   let filtetedTasks;
@@ -42,8 +46,13 @@ export default function TodoList({
       filtetedTasks = tasks;
   }
 
+
+  const onDragEnd = (result) => {
+        // todo
+  }
+
   return (
-    <>
+    <div>
       <ul
         className="mt-4 
     bg-white drop-shadow-md 
@@ -51,42 +60,44 @@ export default function TodoList({
     rounded-md"
       >
         {filtetedTasks.map((task) => (
-          <li
-            key={task.id}
-            className="border-b dark:border-[#393a4c] p-4 hover:dark:text-[#e4e5f1]"
-          >
-            <div className="flex justify-between break-all">
-              <div className="flex items-center">
-                <button
-                  onClick={() => onCheckItem(task.id)}
-                  className={
-                    `flex place-items-center shrink-0 h-6 w-6 mr-4 rounded-full ` +
-                    (task.done
-                      ? "bg-gradient-to-tl to-[#57ddff] from-[#c058f3]"
-                      : "border border-[#393a4c] [&>*]:hidden")
-                  }
-                >
-                  <Image className="mx-auto " src={Check} alt="check icon" />
-                </button>
-                <div
-                  className={
-                    task.done
-                      ? `line-through dark:text-[#54577a] text-[#b3b5ce]`
-                      : `text-[#333552] dark:text-[#b3b5ce]`
-                  }
-                >
-                  {task.text}
+        //   <DragDropContext onDragEnd={onDragEnd}>
+            <li
+              key={task.id}
+              className="border-b dark:border-[#393a4c] p-4 hover:dark:text-[#e4e5f1]"
+            >
+              <div className="flex justify-between break-all">
+                <div className="flex items-center">
+                  <button
+                    onClick={() => onCheckItem(task.id)}
+                    className={
+                      `flex place-items-center shrink-0 h-6 w-6 mr-4 rounded-full ` +
+                      (task.done
+                        ? "bg-gradient-to-tl to-[#57ddff] from-[#c058f3]"
+                        : "border border-[#393a4c] [&>*]:hidden")
+                    }
+                  >
+                    <Image className="mx-auto " src={Check} alt="check icon" />
+                  </button>
+                  <div
+                    className={
+                      task.done
+                        ? `line-through dark:text-[#54577a] text-[#b3b5ce]`
+                        : `text-[#333552] dark:text-[#b3b5ce]`
+                    }
+                  >
+                    {task.text}
+                  </div>
                 </div>
+                <button
+                  className="shrink-0 ml-4"
+                  aria-label="Delete task"
+                  onClick={() => onDeleteItem(task.id)}
+                >
+                  <Image src={Cross} alt="cross icon" />
+                </button>
               </div>
-              <button
-                className="shrink-0 ml-4"
-                aria-label="Delete task"
-                onClick={() => onDeleteItem(task.id)}
-              >
-                <Image src={Cross} alt="cross icon" />
-              </button>
-            </div>
-          </li>
+            </li>
+        //   </DragDropContext>
         ))}
 
         <li className="flex justify-between p-4 text-[#777a92] ">
@@ -98,7 +109,7 @@ export default function TodoList({
           ) : (
             <>
               <span>There`s no tasks!</span>
-              <span>Add some and keep working.</span>
+              <span>Add some.</span>
             </>
           )}
         </li>
@@ -125,7 +136,7 @@ export default function TodoList({
           onFilterChange={setFilter}
         />
       </div>
-    </>
+    </div>
   );
 }
 
