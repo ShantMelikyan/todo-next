@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Task from "./Task";
 import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
 
@@ -64,6 +64,9 @@ export default function TodoList({
 
     setCurrentTasks(items);
   };
+  useEffect(() => {
+    setCurrentTasks(tasks);
+  }, [tasks]);
 
   return (
     <>
