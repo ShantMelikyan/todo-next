@@ -1,7 +1,8 @@
 "use client";
-import { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Task from "./Task";
 import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
+
 
 interface Task {
   id: number;
@@ -13,20 +14,28 @@ interface TodoListProps {
   tasks: Task[];
   onDeleteItem: (id: number) => void;
   onCheckItem: (id: number) => void;
+  onReorderItems: (source: number, destination: number) => void;
 }
 
 export default function TodoList({
   tasks,
   onDeleteItem,
   onCheckItem,
+  onReorderItems,
 }: TodoListProps) {
   const [filter, setFilter] = useState("All");
   const [currentTasks, setCurrentTasks] = useState<Task[]>(tasks);
-  const activeTasksCount = currentTasks.filter((task) => !task.done).length;
+  const activeTasksCount = tasks.filter((task) => task.done === false).length;
+
+  const setTasksAfterReorder = (tasks: Task[]) => {
+    setCurrentTasks(tasks);
+  };
+
 
   const handleClearCompleted = () => {
-    if (currentTasks) {
-      const completedTasks = currentTasks.filter((task) => task.done);
+    if (tasks) {
+      const completedTasks = tasks.filter((task) => task.done === true);
+
       completedTasks.forEach((task) => onDeleteItem(task.id));
     }
   };
@@ -35,41 +44,27 @@ export default function TodoList({
 
   switch (filter) {
     case "Active":
-      filtetedTasks = currentTasks.filter((task) => !task.done);
+      filtetedTasks = tasks.filter((task) => task.done === false);
       break;
     case "Completed":
-      filtetedTasks = currentTasks.filter((task) => task.done);
+      filtetedTasks = tasks.filter((task) => task.done === true);
       break;
-    default:
-      filtetedTasks = currentTasks;
+    default: // 'all' or any other value
+      filtetedTasks = tasks;
   }
 
-  const reorder = (list: Task[], startIndex: number, endIndex: number) => {
-    const result = Array.from(list);
-    const [removed] = result.splice(startIndex, 1);
-    result.splice(endIndex, 0, removed);
-    return result;
-  };
   
-  const onDragEnd = (result: DropResult) => {
+  const onDragEnd = (result: DropResult)  => {
     if (!result.destination) {
       return;
     }
 
-    const items = reorder(
-      currentTasks,
-      result.source.index,
-      result.destination.index
-    );
-
-    setCurrentTasks(items);
+    onReorderItems(result.source.index, result.destination.index);
   };
-  useEffect(() => {
-    setCurrentTasks(tasks);
-  }, [tasks]);
 
   return (
     <>
+    <div>
     <DragDropContext onDragEnd={onDragEnd}>
         <Droppable droppableId="droppable">
           {(provided) => (
@@ -101,8 +96,9 @@ export default function TodoList({
         </Droppable>
       </DragDropContext>
       
-    <div className={`flex justify-between p-4 text-[#777a92] dark:bg-[#25273c] drop-shadow-md ` + (currentTasks.length ? "rounded-b-md" : "rounded-md")}>
-        {currentTasks.length ? (
+    </div>
+    <div className={`flex justify-between p-4 text-[#777a92] dark:bg-[#25273c] drop-shadow-md ` + (tasks.length ? "rounded-b-md" : "rounded-md")}>
+        {tasks.length ? (
           <>
             <span>{`${activeTasksCount} items left`}</span>
             <button onClick={handleClearCompleted}>Clear Completed</button>
@@ -136,7 +132,6 @@ export default function TodoList({
           onFilterChange={setFilter}
         />
       </div>
-      <p className="text-[#636681] text-center m-6">Drag and drop to reoder list! </p>
     </>
   );
 }
@@ -163,3 +158,4 @@ const FilterButton: React.FC<FilterButtonProps> = ({
     </button>
   );
 };
+

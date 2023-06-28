@@ -9,11 +9,16 @@ interface Task {
   text: string;
   done: boolean;
 }
+interface ReorderPayload {
+  source: number;
+  destination: number;
+}
 
 interface Action {
   type: string;
-  id: number;
-  text: string;
+  id?: number;
+  text?: string;
+  payload?: ReorderPayload;
 }
 
 let nextId = 3;
@@ -32,7 +37,7 @@ export default function Home() {
   if (typeof window !== "undefined") {
     savedTasks = localStorage.getItem("tasks");
   }
-  
+
   const initialTasks = savedTasks ? JSON.parse(savedTasks) : predefinedTasks;
   const [tasks, dispatch] = useReducer<React.Reducer<Task[], Action>>(
     tasksReducer,
@@ -73,6 +78,16 @@ export default function Home() {
     });
   };
 
+  const handleReorderItems = (
+    sourceIndex: number,
+    destinationIndex: number
+  ) => {
+    dispatch({
+      type: "reordered",
+      payload: { source: sourceIndex, destination: destinationIndex },
+    });
+  };
+
   return (
     <main
       className="dark:text-white h-screen text-black 
@@ -92,6 +107,7 @@ export default function Home() {
           tasks={tasks}
           onDeleteItem={handleDeleteItem}
           onCheckItem={handleCheckedItem}
+          onReorderItems={handleReorderItems}
         />
       </div>
     </main>
@@ -101,11 +117,13 @@ export default function Home() {
 function tasksReducer(tasks: Task[], action: Action): Task[] {
   switch (action.type) {
     case "added": {
+      const id = action.id as number;
+      const text = action.text as string;
       return [
         ...tasks,
         {
-          id: action.id,
-          text: action.text,
+          id: id,
+          text: text,
           done: false,
         },
       ];
@@ -117,6 +135,16 @@ function tasksReducer(tasks: Task[], action: Action): Task[] {
       return tasks.map((task) =>
         task.id === action.id ? { ...task, done: !task.done } : task
       );
+    }
+    case "reordered": {
+      const { source, destination } = action.payload as {
+        source: number;
+        destination: number;
+      };
+      const newTasks = Array.from(tasks);
+      const [removed] = newTasks.splice(source, 1);
+      newTasks.splice(destination, 0, removed);
+      return newTasks;
     }
     default: {
       throw Error("Unknown action: " + action.type);
