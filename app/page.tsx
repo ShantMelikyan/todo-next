@@ -35,10 +35,13 @@ export default function Home() {
   }, []);
 
   let savedTasks;
+  let savedTaskCount;
   if (typeof window !== "undefined") {
     savedTasks = localStorage.getItem("tasks");
+    savedTaskCount = localStorage.getItem("savedTaskCount");
   }
 
+  let nextId = savedTaskCount ? JSON.parse(savedTaskCount) : 3;
   const initialTasks = savedTasks ? JSON.parse(savedTasks) : predefinedTasks;
   const [tasks, dispatch] = useReducer<React.Reducer<Task[], Action>>(
     tasksReducer,
@@ -60,6 +63,7 @@ export default function Home() {
       id: nextId++,
       text: text,
     });
+    localStorage.setItem("savedTaskCount", nextId);
   };
 
   const handleDeleteItem = (id: number) => {
@@ -80,10 +84,7 @@ export default function Home() {
     });
   };
 
-  const handleReorderItem = (
-    sourceIndex: number,
-    destinationIndex: number
-  ) => {
+  const handleReorderItem = (sourceIndex: number, destinationIndex: number) => {
     dispatch({
       type: "reordered",
       payload: { source: sourceIndex, destination: destinationIndex },
@@ -97,7 +98,6 @@ export default function Home() {
     bg-light-mobile md:bg-light-desktop 
     bg-contain bg-no-repeat"
     >
-    
       <div className="flex items-center justify-between px-6 max-w-4xl mx-auto pt-12">
         <h1 className="transition-colors duration-300 text-3xl tracking-[0.3em]	 font-bold text-white ">
           TODO

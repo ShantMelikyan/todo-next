@@ -36,7 +36,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={josefin_sans.className}>
+    <html lang="en" className={josefin_sans.className + ` overflow-hidden, overscroll-none`}>
       <body className="dark:bg-[#161722] bg-[#fafafa]">
         <Providers>
           {children}
