@@ -47,9 +47,9 @@ export default function TodoList({
   }
 
 
-  const onDragEnd = (result) => {
-        // todo
-  }
+//   const onDragEnd = (result) => {
+//         // todo
+//   }
 
   return (
     <div>
