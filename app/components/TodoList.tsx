@@ -1,9 +1,7 @@
 "use client";
-import React, { useState } from "react";
-import Cross from "../../public/images/icon-cross.svg";
-import Check from "../../public/images/icon-check.svg";
-import Image from "next/image";
-import { DragDropContext, Droppable } from "react-beautiful-dnd";
+import { useState } from "react";
+import Task from "./Task";
+import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
 
 interface Task {
   id: number;
@@ -23,97 +21,96 @@ export default function TodoList({
   onCheckItem,
 }: TodoListProps) {
   const [filter, setFilter] = useState("All");
-  const activeTasksCount = tasks.filter((task) => task.done === false).length;
+  const [currentTasks, setCurrentTasks] = useState<Task[]>(tasks);
+  const activeTasksCount = currentTasks.filter((task) => !task.done).length;
 
   const handleClearCompleted = () => {
-    if (tasks) {
-      const completedTasks = tasks.filter((task) => task.done === true);
-
+    if (currentTasks) {
+      const completedTasks = currentTasks.filter((task) => task.done);
       completedTasks.forEach((task) => onDeleteItem(task.id));
     }
   };
 
-  let filtetedTasks;
+  let filtetedTasks: Task[];
 
   switch (filter) {
     case "Active":
-      filtetedTasks = tasks.filter((task) => task.done === false);
+      filtetedTasks = currentTasks.filter((task) => !task.done);
       break;
     case "Completed":
-      filtetedTasks = tasks.filter((task) => task.done === true);
+      filtetedTasks = currentTasks.filter((task) => task.done);
       break;
-    default: // 'all' or any other value
-      filtetedTasks = tasks;
+    default:
+      filtetedTasks = currentTasks;
   }
 
+  const reorder = (list: Task[], startIndex: number, endIndex: number) => {
+    const result = Array.from(list);
+    const [removed] = result.splice(startIndex, 1);
+    result.splice(endIndex, 0, removed);
+    return result;
+  };
+  
+  const onDragEnd = (result: DropResult) => {
+    if (!result.destination) {
+      return;
+    }
 
-//   const onDragEnd = (result) => {
-//         // todo
-//   }
+    const items = reorder(
+      currentTasks,
+      result.source.index,
+      result.destination.index
+    );
+
+    setCurrentTasks(items);
+  };
 
   return (
-    <div>
-      <ul
-        className="mt-4 
-    bg-white drop-shadow-md 
-    dark:bg-[#25273c] dark:text-[#cacde8]  
-    rounded-md"
-      >
-        {filtetedTasks.map((task) => (
-        //   <DragDropContext onDragEnd={onDragEnd}>
-            <li
-              key={task.id}
-              className="border-b dark:border-[#393a4c] p-4 hover:dark:text-[#e4e5f1]"
+    <>
+    <DragDropContext onDragEnd={onDragEnd}>
+        <Droppable droppableId="droppable">
+          {(provided) => (
+            <ul
+              className="mt-4 bg-white dark:bg-[#25273c] dark:text-[#cacde8] rounded-t-md"
+              ref={provided.innerRef}
+              {...provided.droppableProps}
             >
-              <div className="flex justify-between break-all">
-                <div className="flex items-center">
-                  <button
-                    onClick={() => onCheckItem(task.id)}
-                    className={
-                      `flex place-items-center shrink-0 h-6 w-6 mr-4 rounded-full ` +
-                      (task.done
-                        ? "bg-gradient-to-tl to-[#57ddff] from-[#c058f3]"
-                        : "border border-[#393a4c] [&>*]:hidden")
-                    }
+              {filtetedTasks.map((task, index) => (
+                <Draggable key={task.id} draggableId={task.id.toString()} index={index}>
+                {(provided) => (
+                  <li
+                    ref={provided.innerRef}
+                    {...provided.draggableProps}
+                    {...provided.dragHandleProps}
                   >
-                    <Image className="mx-auto " src={Check} alt="check icon" />
-                  </button>
-                  <div
-                    className={
-                      task.done
-                        ? `line-through dark:text-[#54577a] text-[#b3b5ce]`
-                        : `text-[#333552] dark:text-[#b3b5ce]`
-                    }
-                  >
-                    {task.text}
-                  </div>
-                </div>
-                <button
-                  className="shrink-0 ml-4"
-                  aria-label="Delete task"
-                  onClick={() => onDeleteItem(task.id)}
-                >
-                  <Image src={Cross} alt="cross icon" />
-                </button>
-              </div>
-            </li>
-        //   </DragDropContext>
-        ))}
-
-        <li className="flex justify-between p-4 text-[#777a92] ">
-          {tasks.length ? (
-            <>
-              <span>{`${activeTasksCount} items left`}</span>
-              <button onClick={handleClearCompleted}>Clear Completed</button>
-            </>
-          ) : (
-            <>
-              <span>There`s no tasks!</span>
-              <span>Add some.</span>
-            </>
+                    <Task
+                      task={task}
+                      onDeleteItem={onDeleteItem}
+                      onCheckItem={onCheckItem}
+                    />
+                  </li>
+                )}
+              </Draggable>
+              ))}
+              {provided.placeholder}
+            </ul>
           )}
-        </li>
-      </ul>
+        </Droppable>
+      </DragDropContext>
+      
+    <div className={`flex justify-between p-4 text-[#777a92] dark:bg-[#25273c] drop-shadow-md ` + (currentTasks.length ? "rounded-b-md" : "rounded-md")}>
+        {currentTasks.length ? (
+          <>
+            <span>{`${activeTasksCount} items left`}</span>
+            <button onClick={handleClearCompleted}>Clear Completed</button>
+          </>
+        ) : (
+          <>
+            <span>There`s no tasks!</span>
+            <span>Add some.</span>
+          </>
+        )}
+      </div>
       <div
         className="p-4 mt-4 drop-shadow-md 
         bg-white dark:bg-[#25273c] 
@@ -136,7 +133,8 @@ export default function TodoList({
           onFilterChange={setFilter}
         />
       </div>
-    </div>
+      <p className="text-[#636681] text-center m-6">Drag and drop to reoder list! </p>
+    </>
   );
 }
 

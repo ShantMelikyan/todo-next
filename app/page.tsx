@@ -1,6 +1,6 @@
 "use client";
 import { useReducer, useEffect, useState } from "react";
-import TodoItem from "./components/TodoItem";
+import CreateTodoItem from "./components/CreateTodoItem";
 import TodoList from "./components/TodoList";
 import ThemeSwitcher from "./ThemeSwitcher";
 
@@ -87,7 +87,7 @@ export default function Home() {
         <ThemeSwitcher />
       </div>
       <div className=" p-6 max-w-4xl mx-auto">
-        <TodoItem onAddItem={handleAddItem} />
+        <CreateTodoItem onAddItem={handleAddItem} />
         <TodoList
           tasks={tasks}
           onDeleteItem={handleDeleteItem}
