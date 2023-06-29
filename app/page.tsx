@@ -36,7 +36,7 @@ export default function Home() {
   }
 
   const initialTasks = savedData?.tasks || predefinedTasks;
-  const initialNextId = savedData?.nextId || 3;
+  const initialNextId = savedData?.nextId || predefinedTasks.length;
   const [{ tasks, nextId }, dispatch] = useReducer<
     React.Reducer<{ tasks: Task[]; nextId: number }, Action>
   >(tasksReducer, { tasks: initialTasks, nextId: initialNextId });
