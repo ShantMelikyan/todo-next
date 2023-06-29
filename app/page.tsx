@@ -2,13 +2,13 @@
 import { useReducer, useEffect, useState } from "react";
 import CreateTodoItem from "./components/CreateTodoItem";
 import TodoList from "./components/TodoList";
-import ThemeSwitcher from "./ThemeSwitcher";
 
 interface Task {
   id: number;
   text: string;
   done: boolean;
 }
+
 interface ReorderPayload {
   source: number;
   destination: number;
@@ -21,7 +21,6 @@ interface Action {
   payload?: ReorderPayload;
 }
 
-let nextId = 3;
 let predefinedTasks: Task[] = [
   { id: 0, text: "Add", done: true },
   { id: 1, text: "second", done: false },
@@ -30,57 +29,48 @@ let predefinedTasks: Task[] = [
 
 export default function Home() {
   const [mounted, setMounted] = useState(false);
+
+  let savedData;
+  if (typeof window !== "undefined") {
+    savedData = JSON.parse(localStorage.getItem("todoData") || "{}");
+  }
+
+  const initialTasks = savedData?.tasks || predefinedTasks;
+  const initialNextId = savedData?.nextId || 3;
+  const [{ tasks, nextId }, dispatch] = useReducer<
+    React.Reducer<{ tasks: Task[]; nextId: number }, Action>
+  >(tasksReducer, { tasks: initialTasks, nextId: initialNextId });
+
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  let savedTasks;
-  let savedTaskCount;
-  if (typeof window !== "undefined") {
-    savedTasks = localStorage.getItem("tasks");
-    savedTaskCount = localStorage.getItem("savedTaskCount");
-  }
-
-  let nextId = savedTaskCount ? JSON.parse(savedTaskCount) : 3;
-  const initialTasks = savedTasks ? JSON.parse(savedTasks) : predefinedTasks;
-  const [tasks, dispatch] = useReducer<React.Reducer<Task[], Action>>(
-    tasksReducer,
-    initialTasks
-  );
-
   useEffect(() => {
-    localStorage.setItem("tasks", JSON.stringify(tasks));
-  }, [tasks]);
+    localStorage.setItem("todoData", JSON.stringify({ tasks, nextId }));
+  }, [tasks, nextId]);
 
   if (!mounted) {
-    return <></>;
+    return null;
   }
 
   const handleAddItem = (text: string) => {
-    console.log(`adding now... ${text}`);
     dispatch({
       type: "added",
-      id: nextId++,
       text: text,
     });
-    localStorage.setItem("savedTaskCount", nextId);
   };
 
   const handleDeleteItem = (id: number) => {
-    console.log(`deleting now... ${id}`);
     dispatch({
       type: "deleted",
       id: id,
-      text: "",
     });
   };
 
   const handleCheckedItem = (id: number) => {
-    console.log(`now done task id: ${id}`);
     dispatch({
       type: "checkToggle",
       id: id,
-      text: "",
     });
   };
 
@@ -92,62 +82,59 @@ export default function Home() {
   };
 
   return (
-    <main
-      className="dark:text-white h-screen text-black 
-    dark:bg-dark-mobile md:dark:bg-dark-desktop 
-    bg-light-mobile md:bg-light-desktop 
-    bg-contain bg-no-repeat"
-    >
-      <div className="flex items-center justify-between px-6 max-w-4xl mx-auto pt-12">
-        <h1 className="transition-colors duration-300 text-3xl tracking-[0.3em]	 font-bold text-white ">
-          TODO
-        </h1>
-        <ThemeSwitcher />
-      </div>
-      <div className=" p-6 max-w-4xl mx-auto">
-        <CreateTodoItem onAddItem={handleAddItem} />
-        <TodoList
-          tasks={tasks}
-          onDeleteItem={handleDeleteItem}
-          onCheckItem={handleCheckedItem}
-          onReorderItems={handleReorderItem}
-        />
-      </div>
-    </main>
+    <div className=" p-6 max-w-4xl mx-auto">
+      <CreateTodoItem onAddItem={handleAddItem} />
+      <TodoList
+        tasks={tasks}
+        onDeleteItem={handleDeleteItem}
+        onCheckItem={handleCheckedItem}
+        onReorderItems={handleReorderItem}
+      />
+    </div>
   );
 }
 
-function tasksReducer(tasks: Task[], action: Action): Task[] {
+function tasksReducer(
+  state: { tasks: Task[]; nextId: number },
+  action: Action
+): { tasks: Task[]; nextId: number } {
   switch (action.type) {
     case "added": {
-      const id = action.id as number;
+      const id = state.nextId;
       const text = action.text as string;
-      return [
-        ...tasks,
-        {
-          id: id,
-          text: text,
-          done: false,
-        },
-      ];
+      return {
+        tasks: [{ id: id, text: text, done: false }, ...state.tasks],
+        nextId: id + 1,
+      };
     }
     case "deleted": {
-      return tasks.filter((task) => task.id !== action.id);
+      const updatedTasks = state.tasks.filter((task) => task.id !== action.id);
+      const updatedNextId = updatedTasks.length ? state.nextId : 0;
+      return {
+        tasks: updatedTasks,
+        nextId: updatedNextId,
+      };
     }
     case "checkToggle": {
-      return tasks.map((task) =>
-        task.id === action.id ? { ...task, done: !task.done } : task
-      );
+      return {
+        tasks: state.tasks.map((task) =>
+          task.id === action.id ? { ...task, done: !task.done } : task
+        ),
+        nextId: state.nextId,
+      };
     }
     case "reordered": {
       const { source, destination } = action.payload as {
         source: number;
         destination: number;
       };
-      const newTasks = Array.from(tasks);
+      const newTasks = Array.from(state.tasks);
       const [removed] = newTasks.splice(source, 1);
       newTasks.splice(destination, 0, removed);
-      return newTasks;
+      return {
+        tasks: newTasks,
+        nextId: state.nextId,
+      };
     }
     default: {
       throw Error("Unknown action: " + action.type);
